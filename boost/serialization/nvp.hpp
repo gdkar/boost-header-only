@@ -21,9 +21,6 @@
 #include <boost/config.hpp>
 #include <boost/detail/workaround.hpp>
 
-#include <boost/mpl/integral_c.hpp>
-#include <boost/mpl/integral_c_tag.hpp>
-
 #include <boost/serialization/level.hpp>
 #include <boost/serialization/tracking.hpp>
 #include <boost/serialization/split_member.hpp>
@@ -40,16 +37,13 @@ struct nvp :
     public wrapper_traits<const nvp< T > >
 {
 //private:
-    //friend const nvp< T > make_nvp(const char * name, T & t);
     nvp(const nvp & rhs) :
-        // note: redundant cast works around borland issue
-        std::pair<const char *, T *>(rhs.first, (T*)rhs.second)
+        std::pair<const char *, T *>(rhs.first, rhs.second)
     {}
 public:
     explicit nvp(const char * name_, T & t) :
-        // note: redundant cast works around borland issue
         // note: added _ to suppress useless gcc warning
-        std::pair<const char *, T *>(name_, (T*)(& t))
+        std::pair<const char *, T *>(name_, & t)
     {}
 
     const char * name() const {
@@ -63,26 +57,18 @@ public:
         return *(this->second);
     }
 
-    // True64 compiler complains with a warning about the use of
-    // the name "Archive" hiding some higher level usage.  I'm sure this
-    // is an error but I want to accomodated as it generates a long warning
-    // listing and might be related to a lot of test failures.
-    // default treatment for name-value pairs. The name is
-    // just discarded and only the value is serialized. 
-    template<class Archivex>
+    template<class Archive>
     void save(
-        Archivex & ar, 
+        Archive & ar,
         const unsigned int /* file_version */
     ) const {
-        // CodeWarrior 8.x can't seem to resolve the << op for a rhs of "const T *"
         ar.operator<<(const_value());
     }
-    template<class Archivex>
+    template<class Archive>
     void load(
-        Archivex & ar, 
+        Archive & ar,
         const unsigned int /* file_version */
     ){
-        // CodeWarrior 8.x can't seem to resolve the >> op for a rhs of "const T *"
         ar.operator>>(value());
     }
     BOOST_SERIALIZATION_SPLIT_MEMBER()
@@ -117,7 +103,6 @@ struct tracking_level<nvp< T > >
     typedef mpl::int_<track_never> type;
     BOOST_STATIC_CONSTANT(int, value = tracking_level::type::value);
 };
-
 
 } // seralization
 } // boost

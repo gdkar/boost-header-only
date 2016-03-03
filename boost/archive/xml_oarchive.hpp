@@ -55,17 +55,9 @@ class BOOST_SYMBOL_VISIBLE xml_oarchive_impl :
 public:
 #else
 protected:
-    #if BOOST_WORKAROUND(BOOST_MSVC, < 1500)
-        // for some inexplicable reason insertion of "class" generates compile erro
-        // on msvc 7.1
-        friend detail::interface_oarchive<Archive>;
-        friend basic_xml_oarchive<Archive>;
-        friend save_access;
-    #else
-        friend class detail::interface_oarchive<Archive>;
-        friend class basic_xml_oarchive<Archive>;
-        friend class save_access;
-    #endif
+    friend class detail::interface_oarchive<Archive>;
+    friend class basic_xml_oarchive<Archive>;
+    friend class save_access;
 #endif
     template<class T>
     void save(const T & t){
@@ -96,8 +88,25 @@ protected:
     BOOST_ARCHIVE_DECL 
     ~xml_oarchive_impl();
 public:
+    BOOST_ARCHIVE_DECL
     void save_binary(const void *address, std::size_t count);
 };
+
+} // namespace archive
+} // namespace boost
+
+#ifdef BOOST_MSVC
+#pragma warning(pop)
+#endif
+
+#include <boost/archive/detail/abi_suffix.hpp> // pops abi_suffix.hpp pragmas
+#ifdef BOOST_MSVC
+#  pragma warning(push)
+#  pragma warning(disable : 4511 4512)
+#endif
+
+namespace boost { 
+namespace archive {
 
 // we use the following because we can't use
 // typedef xml_oarchive_impl<xml_oarchive_impl<...> > xml_oarchive;
@@ -124,7 +133,5 @@ BOOST_SERIALIZATION_REGISTER_ARCHIVE(boost::archive::xml_oarchive)
 #ifdef BOOST_MSVC
 #pragma warning(pop)
 #endif
-
-#include <boost/archive/detail/abi_suffix.hpp> // pops abi_suffix.hpp pragmas
 
 #endif // BOOST_ARCHIVE_XML_OARCHIVE_HPP

@@ -29,7 +29,7 @@ class none_t {};
 struct none_t
 {
   struct init_tag{};
-  explicit none_t(init_tag){} // to prevent default constructor
+  explicit none_t(init_tag){} // to disable default constructor
 };
 
 #endif // old implementation workarounds
@@ -37,4 +37,3 @@ struct none_t
 } // namespace boost
 
 #endif // header guard
-
