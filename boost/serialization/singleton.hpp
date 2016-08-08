@@ -111,6 +111,12 @@ bool detail::singleton_wrapper< T >::m_is_destroyed = false;
 
 } // detail
 
+// note usage of BOOST_DLLEXPORT.  These functions are in danger of
+// being eliminated by the optimizer when building an application in
+// release mode. Usage of the macro is meant to signal the compiler/linker
+// to avoid dropping these functions which seem to be unreferenced.
+// This usage is not related to autolinking.
+
 template <class T>
 class singleton : public singleton_module
 {

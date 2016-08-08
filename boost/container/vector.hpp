@@ -380,7 +380,7 @@ struct vector_alloc_holder
       , m_capacity()
    {
       if(initial_size){
-         pointer reuse = 0;
+         pointer reuse = pointer();
          m_start = this->allocation_command(allocate_new, initial_size, m_capacity = initial_size, reuse);
       }
    }
@@ -393,7 +393,7 @@ struct vector_alloc_holder
       , m_capacity()
    {
       if(initial_size){
-         pointer reuse = 0;
+         pointer reuse = pointer();
          m_start = this->allocation_command(allocate_new, initial_size, m_capacity = initial_size, reuse);
       }
    }
@@ -525,7 +525,7 @@ struct vector_alloc_holder
    void priv_first_allocation(size_type cap)
    {
       if(cap){
-         pointer reuse = 0;
+         pointer reuse = pointer();
          m_start = this->allocation_command(allocate_new, cap, cap, reuse);
          m_capacity = cap;
          #ifdef BOOST_CONTAINER_VECTOR_ALLOC_STATS
@@ -792,7 +792,7 @@ class vector
    //! <b>Throws</b>: Nothing.
    //!
    //! <b>Complexity</b>: Constant.
-   vector() BOOST_NOEXCEPT_OR_NOTHROW
+   vector() BOOST_NOEXCEPT_IF(container_detail::is_nothrow_default_constructible<Allocator>::value)
       : m_holder()
    {}
 
@@ -1103,7 +1103,7 @@ class vector
    //!   this->get>allocator() == x.get_allocator(). Linear otherwise.
    BOOST_CONTAINER_FORCEINLINE vector& operator=(BOOST_RV_REF(vector) x)
       BOOST_NOEXCEPT_IF(allocator_traits_type::propagate_on_container_move_assignment::value
-                                  || allocator_traits_type::is_always_equal::value)
+                        || allocator_traits_type::is_always_equal::value)
    {
       BOOST_ASSERT(&x != this);
       this->priv_move_assign(boost::move(x));
@@ -1630,11 +1630,10 @@ class vector
       return const_iterator(this->m_holder.start()+n);
    }
 
-   //! <b>Requires</b>: size() >= n.
+   //! <b>Requires</b>: begin() <= p <= end().
    //!
-   //! <b>Effects</b>: Returns an iterator to the nth element
-   //!   from the beginning of the container. Returns end()
-   //!   if n == size().
+   //! <b>Effects</b>: Returns the index of the element pointed by p
+   //!   and size() if p == end().
    //!
    //! <b>Throws</b>: Nothing.
    //!
@@ -2247,7 +2246,7 @@ class vector
             size_type *indexes = 0;
             while(remaining){
                //Query for room to store indexes in the remaining buffer
-               uintptr_t const szt_align_mask = container_detail::alignment_of<size_type>::value - 1;
+               boost::uintptr_t const szt_align_mask = container_detail::alignment_of<size_type>::value - 1;
                boost::uintptr_t const addr = boost::uintptr_t(this->priv_raw_begin() + s + n);
                boost::uintptr_t const capaddr = boost::uintptr_t(this->priv_raw_begin() + c);
                boost::uintptr_t const aligned_addr = (addr + szt_align_mask) & ~szt_align_mask;
@@ -2544,7 +2543,7 @@ class vector
       //buffer or expand the old one.
       bool same_buffer_start;
       size_type real_cap = 0;
-      pointer reuse = 0;
+      pointer reuse(this->m_holder.start());
       pointer const ret(this->m_holder.allocation_command(allocate_new | expand_fwd | expand_bwd, new_cap, real_cap = new_cap, reuse));
 
       //Check for forward expansion

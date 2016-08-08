@@ -86,6 +86,7 @@ public:
     typedef T& value_type;
     typedef T& reference_type;
     typedef T& reference_const_type;
+    typedef T& rval_reference_type;
     typedef T* pointer_type;
     typedef T* pointer_const_type;
     
@@ -95,6 +96,7 @@ public:
     template <class U>
         explicit optional(const optional<U&>& rhs) BOOST_NOEXCEPT : ptr_(rhs.ptr_) {}
     optional(const optional& rhs) BOOST_NOEXCEPT : ptr_(rhs.ptr_) {}
+    optional(T& rhs) BOOST_NOEXCEPT : ptr_(boost::addressof(rhs)) {}
     
 
     optional& operator=(const optional& rhs) BOOST_NOEXCEPT { ptr_ = rhs.ptr_; return *this; }
@@ -120,6 +122,8 @@ public:
     
 #ifndef BOOST_OPTIONAL_DETAIL_NO_RVALUE_REFERENCES   
  
+    optional(T&& /* rhs */) BOOST_NOEXCEPT { detail::prevent_binding_rvalue<T&&>(); }
+    
     template <class R>
         optional(R&& r, BOOST_DEDUCED_TYPENAME boost::enable_if<detail::is_no_optional<R> >::type* = 0) BOOST_NOEXCEPT
         : ptr_(boost::addressof(r)) { detail::prevent_binding_rvalue<R>(); }

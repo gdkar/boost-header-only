@@ -139,6 +139,9 @@ public:
     //! @brief The const reverse iterator.
     typedef typename base_t::const_reverse_iterator const_reverse_iterator;
 
+    //! @brief The capacity/max size of the container
+    static const size_type static_capacity = Capacity;
+
     //! @brief Constructs an empty static_vector.
     //!
     //! @par Throws
@@ -276,6 +279,7 @@ public:
     //! @par Complexity
     //!   Linear O(N).
     BOOST_CONTAINER_FORCEINLINE static_vector(BOOST_RV_REF(static_vector) other)
+      BOOST_NOEXCEPT_IF(boost::container::container_detail::is_nothrow_move_constructible<value_type>::value)
         : base_t(BOOST_MOVE_BASE(base_t, other))
     {}
 
